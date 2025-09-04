@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="glass-container">
+    <h2>Join the Order</h2>
+    <p class="subtitle">Register to unlock the full potential of the Book Nest.</p>
+
+    <form action="{{ url_for('register') }}" method="POST" class="register-form" novalidate>
+        <div class="form-group">
+            <label for="fullname">Full Name *</label>
+            <input
+                type="text"
+                id="fullname"
+                name="fullname"
+                required
+                minlength="2"
+                pattern="[A-Za-z\s]+"
+                placeholder="Enter your full name"
+                autocomplete="name"
+            >
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email Address *</label>
+            <input
+                type="email"
+                id="email"
+                name="email"
+                required
+                placeholder="Enter your email"
+                autocomplete="email"
+            >
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password *</label>
+            <input
+                type="password"
+                id="password"
+                name="password"
+                required
+                minlength="6"
+                placeholder="Minimum 6 characters"
+                autocomplete="new-password"
+            >
+        </div>
+
+        <div class="form-group">
+            <label for="confirmpassword">Confirm Password *</label>
+            <input
+                type="password"
+                id="confirmpassword"
+                name="confirmpassword"
+                required
+                minlength="6"
+                placeholder="Re-enter your password"
+                autocomplete="new-password"
+            >
+        </div>
+
+        <button type="submit" class="btn-primary">
+            Create Account
+        </button>
+
+        <div class="form-links">
+            <p>Already a member? <a href="{{ url_for('login') }}">Sign in here</a></p>
+            <p><a href="{{ url_for('home') }}">← Return to the Entrance</a></p>
+        </div>
+    </form>
+</div>
+{% endblock %}

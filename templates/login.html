@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="glass-container">
+    <h2>Enter the Archives</h2>
+    <p class="subtitle">Sign in to access the hidden knowledge.</p>
+
+    <form action="{{ url_for('login') }}" method="POST" class="login-form" novalidate>
+        <div class="form-group">
+            <label for="email">Email Address</label>
+            <input
+                type="email"
+                id="email"
+                name="email"
+                required
+                placeholder="Enter your email address"
+                autocomplete="email"
+                value="{{ request.form.email if request.form.email else '' }}"
+            >
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input
+                type="password"
+                id="password"
+                name="password"
+                required
+                placeholder="Enter your password"
+                autocomplete="current-password"
+                minlength="6"
+            >
+        </div>
+
+        <button type="submit" class="btn-primary">
+            Unlock
+        </button>
+
+        <div class="form-links">
+            <p>Not yet initiated? <a href="{{ url_for('register') }}">Join the Order</a></p>
+            <p><a href="{{ url_for('home') }}">← Return to the Entrance</a></p>
+        </div>
+    </form>
+</div>
+{% endblock %}

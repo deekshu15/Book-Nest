@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="glass-container">
+    <h2>Admin's Tome</h2>
+    <p class="subtitle">Overview of all the scrolls in the Mystic Library.</p>
+
+    {% if books %}
+    <table class="book-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Category</th>
+                <th>Year</th>
+                <th>Status</th>
+                <!-- Add more columns for admin actions like Edit/Delete later -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for book in books %}
+            <tr>
+                <td data-label="ID">{{ book.id }}</td>
+                <td data-label="Title">{{ book.title }}</td>
+                <td data-label="Author">{{ book.author }}</td>
+                <td data-label="Category">{{ book.category }}</td>
+                <td data-label="Year">{{ book.year }}</td>
+                <td data-label="Status"><span class="status {{ book.status | lower | replace(' ', '-') }}">{{ book.status }}</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p class="subtitle" style="margin-top: 2rem;">No scrolls currently in the archives.</p>
+    {% endif %}
+</div>
+{% endblock %}

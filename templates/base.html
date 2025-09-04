@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Nest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700&family=Lora:wght@400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Lora', serif;
+            line-height: 1.6;
+            color: #e0e0e0; /* Lighter text for dark background */
+            background: linear-gradient(135deg, #2c3e50 0%, #1a2a3a 100%); /* Deep blues/greys */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+        }
+
+        /* Header & Navbar Styles */
+        header {
+            background: rgba(10, 20, 30, 0.8); /* Darker, slightly transparent */
+            backdrop-filter: blur(15px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(50, 70, 90, 0.2);
+        }
+
+        .navbar {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .navbar h1 {
+            font-family: 'Playfair Display', serif;
+            color: #f0f0f0;
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, #a8c0ff, #3f2b96); /* Subtle gradient for title */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        nav {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+            background: rgba(50, 70, 90, 0.1); /* Subtle background for nav links */
+            padding: 0.6rem 1rem;
+            border-radius: 15px;
+            border: 1px solid rgba(70, 90, 110, 0.15);
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #c0c0c0; /* Lighter grey for links */
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        nav a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #a8c0ff, #3f2b96); /* Gradient for hover effect */
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: -1;
+        }
+
+        nav a:hover::before {
+            left: 0;
+        }
+
+        nav a:hover {
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(168, 192, 255, 0.3);
+        }
+
+        nav a.active {
+            background: linear-gradient(135deg, #a8c0ff, #3f2b96);
+            color: white;
+            box-shadow: 0 6px 20px rgba(168, 192, 255, 0.4);
+            transform: translateY(-1px);
+        }
+
+        nav a.active::before {
+            display: none;
+        }
+
+        /* Main Content Area */
+        main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        /* Glassmorphism Card/Container */
+        .glass-container {
+            background: rgba(255, 255, 255, 0.08); /* Very subtle transparency */
+            backdrop-filter: blur(18px); /* Stronger blur */
+            border-radius: 25px; /* More rounded corners */
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4); /* Deeper shadow */
+            max-width: 700px;
+            width: 100%;
+            padding: 3rem;
+            border: 1px solid rgba(255, 255, 255, 0.15); /* Subtle border */
+            position: relative;
+            overflow: hidden;
+            animation: fadeInScale 0.8s ease-out; /* New animation */
+        }
+
+        .glass-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+            pointer-events: none;
+        }
+
+        .glass-container > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Headings within containers */
+        .glass-container h2, .glass-container h1 {
+            font-family: 'Playfair Display', serif;
+            color: #a8c0ff; /* Lighter blue for headings */
+            font-size: 2.8rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-weight: 700;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .glass-container p.subtitle {
+            color: #b0b0b0;
+            text-align: center;
+            margin-bottom: 2.5rem;
+            font-size: 1.1rem;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1.8rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.6rem;
+            color: #f0f0f0;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 1rem 1.2rem;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            color: #f0f0f0;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input::placeholder {
+            color: #a0a0a0;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: #a8c0ff;
+            box-shadow: 0 0 0 4px rgba(168, 192, 255, 0.2);
+            outline: none;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Buttons */
+        .btn-primary {
+            display: inline-block;
+            background: linear-gradient(135deg, #a8c0ff, #3f2b96);
+            color: white;
+            text-decoration: none;
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 10px 25px rgba(63, 43, 150, 0.3);
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 1.5rem;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(63, 43, 150, 0.5);
+            background: linear-gradient(135deg, #8fa8e0, #302070);
+        }
+
+        /* Flash Messages */
+        .flash-messages {
+            width: 100%;
+            max-width: 600px;
+            margin: 1rem auto;
+            padding: 0 1rem;
+        }
+
+        .flash {
+            padding: 0.8rem 1.2rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            font-weight: 500;
+            animation: slideInFromTop 0.5s ease-out forwards;
+            color: #fff;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .flash.success {
+            background-color: rgba(76, 175, 80, 0.8); /* Green */
+            border: 1px solid rgba(76, 175, 80, 0.5);
+        }
+
+        .flash.danger {
+            background-color: rgba(244, 67, 54, 0.8); /* Red */
+            border: 1px solid rgba(244, 67, 54, 0.5);
+        }
+
+        .flash.info {
+            background-color: rgba(33, 150, 243, 0.8); /* Blue */
+            border: 1px solid rgba(33, 150, 243, 0.5);
+        }
+
+        /* Book Table & List */
+        .book-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .book-table th, .book-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .book-table th {
+            background: linear-gradient(135deg, #3f2b96, #a8c0ff);
+            color: white;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+
+        .book-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .book-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .status {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+
+        .status.available {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+        }
+
+        .status.checked-out {
+            background: rgba(255, 152, 0, 0.2);
+            color: #FF9800;
+        }
+
+        .status.reserved {
+            background: rgba(33, 150, 243, 0.2);
+            color: #2196F3;
+        }
+
+        /* Links in forms */
+        .form-links {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        .form-links a {
+            color: #a8c0ff;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .form-links a:hover {
+            color: #8fa8e0;
+            text-decoration: underline;
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(10, 20, 30, 0.8);
+            color: #c0c0c0;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: auto;
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(50, 70, 90, 0.2);
+        }
+
+        /* Animations */
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        @keyframes slideInFromTop {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+            }
+
+            .navbar h1 {
+                font-size: 1.8rem;
+            }
+
+            nav {
+                width: 100%;
+                justify-content: center;
+            }
+
+            nav a {
+                font-size: 0.9rem;
+                padding: 0.6rem 1.2rem;
+            }
+
+            main {
+                padding: 1rem;
+            }
+
+            .glass-container {
+                padding: 2rem;
+                margin: 1rem;
+                max-width: none;
+            }
+
+            .glass-container h2, .glass-container h1 {
+                font-size: 2.2rem;
+            }
+
+            .book-table, .book-table thead, .book-table tbody,
+            .book-table th, .book-table td, .book-table tr {
+                display: block;
+            }
+
+            .book-table thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+
+            .book-table tr {
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                margin-bottom: 1rem;
+                border-radius: 10px;
+                padding: 1rem;
+                background: rgba(255, 255, 255, 0.05);
+            }
+
+            .book-table td {
+                border: none;
+                position: relative;
+                padding-left: 50%;
+                text-align: right;
+            }
+
+            .book-table td:before {
+                content: attr(data-label);
+                position: absolute;
+                left: 6px;
+                width: 45%;
+                padding-right: 10px;
+                white-space: nowrap;
+                text-align: left;
+                font-weight: bold;
+                color: #c0c0c0;
+            }
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Example: Add a subtle hover effect to glass containers
+            const glassContainers = document.querySelectorAll('.glass-container');
+            glassContainers.forEach(container => {
+                container.addEventListener('mouseenter', () => {
+                    container.style.transform = 'scale(1.01)';
+                    container.style.transition = 'transform 0.3s ease';
+                });
+                container.addEventListener('mouseleave', () => {
+                    container.style.transform = 'scale(1)';
+                });
+            });
+
+            // For search page: handle dynamic search and filtering
+            const searchForm = document.querySelector('.search-form');
+            if (searchForm) {
+                searchForm.addEventListener('submit', (event) => {
+                    // This prevents default form submission if you want to handle it via JS/AJAX
+                    // For this Flask setup, we still want form submission to trigger POST request
+                    // event.preventDefault();
+                    // You could add a loading spinner here before form submission
+                    const searchBtn = document.querySelector('.btn-primary');
+                    searchBtn.innerHTML = '<span class="loading-spinner"></span> Searching...';
+                    searchBtn.disabled = true;
+                });
+            }
+
+            // Loading spinner CSS (added dynamically or could be in <style>)
+            const style = document.createElement('style');
+            style.innerHTML = `
+                .loading-spinner {
+                    border: 4px solid rgba(255, 255, 255, 0.3);
+                    border-top: 4px solid #fff;
+                    border-radius: 50%;
+                    width: 20px;
+                    height: 20px;
+                    animation: spin 1s linear infinite;
+                    display: inline-block;
+                    vertical-align: middle;
+                    margin-right: 8px;
+                }
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
+</head>
+<body>
+    <header>
+        <div class="navbar">
+            <h1>Book Nest</h1>
+            <nav role="navigation">
+                <a href="{{ url_for('home') }}" {% if request.endpoint == 'home' %}class="active"{% endif %}>Home</a>
+                <a href="{{ url_for('register') }}" {% if request.endpoint == 'register' %}class="active"{% endif %}>Register</a>
+                <a href="{{ url_for('login') }}" {% if request.endpoint == 'login' %}class="active"{% endif %}>Login</a>
+                <a href="{{ url_for('search') }}" {% if request.endpoint == 'search' %}class="active"{% endif %}>Search</a>
+                {% if session.get('role') == 'admin' %}
+                <a href="{{ url_for('admin_panel') }}" {% if request.endpoint == 'admin_panel' %}class="active"{% endif %}>Admin Panel</a>
+                {% endif %}
+                {% if session.get('logged_in') %}
+                <a href="{{ url_for('logout') }}">Logout</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Book Nest. All rights reserved.</p>
+    </footer>
+</body>
+</html>

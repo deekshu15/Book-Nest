@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  /* Wider container only for search page */
+  .glass-container.search-page {
+    max-width: 1000px;
+    width: 100%;
+    transform: none !important;   /* disable JS scaling */
+    transition: none !important;
+  }
+
+  /* Center the results table */
+  .book-table {
+    max-width: 900px;   /* limit width */
+    margin: 2rem auto;  /* center horizontally */
+    width: 100%;
+  }
+
+  /* Prevent row shifting/moving */
+  .book-table tbody tr {
+    transition: background 0.3s ease;
+    transform: none !important;
+  }
+
+  .book-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.07);
+    transform: none !important;
+  }
+</style>
+
+<div class="glass-container search-page animate-fadeInScale" role="main" aria-label="Book Search Section">
+  <h2>Seek the Scrolls</h2>
+  <p class="subtitle">Discover ancient wisdom and modern insights.</p>
+
+  <form class="search-form" method="POST" action="{{ url_for('search') }}" aria-label="Search books form">
+    <div class="form-group">
+      <label for="searchInput">Search by Title, Author, or Category</label>
+      <input
+        type="text"
+        class="form-control search-input"
+        placeholder="e.g., 'Dune', 'History', 'Jane Austen'"
+        id="searchInput"
+        name="search_query"
+        value="{{ search_query }}"
+        aria-describedby="searchHelp"
+      />
+      <small id="searchHelp" class="form-help-text">Enter keywords to search books</small>
+    </div>
+
+    <div class="form-group">
+      <label for="categoryFilter">Category</label>
+      <select id="categoryFilter" name="categoryFilter" class="form-control" aria-label="Filter by category">
+        <option value="All Categories" {% if category_filter == 'All Categories' or category_filter == '' %}selected{% endif %}>All Categories</option>
+        <option value="CIV" {% if category_filter == 'CIV' %}selected{% endif %}>CIV</option>
+        <option value="CSE" {% if category_filter == 'CSE' %}selected{% endif %}>CSE</option>
+        <option value="ECE" {% if category_filter == 'ECE' %}selected{% endif %}>ECE</option>
+        <option value="EEE" {% if category_filter == 'EEE' %}selected{% endif %}>EEE</option>
+        <option value="H&S" {% if category_filter == 'H&S' %}selected{% endif %}>H&S</option>
+        <option value="MBA" {% if category_filter == 'MBA' %}selected{% endif %}>MBA</option>
+        <option value="ME" {% if category_filter == 'ME' %}selected{% endif %}>ME</option>
+        <option value="MTCSE_CS" {% if category_filter == 'MTCSE_CS' %}selected{% endif %}>MTCSE_CS</option>
+        <option value="MTCSE_CSE" {% if category_filter == 'MTCSE_CSE' %}selected{% endif %}>MTCSE_CSE</option>
+        <option value="MTCSE_VLSI" {% if category_filter == 'MTCSE_VLSI' %}selected{% endif %}>MTCSE_VLSI</option>
+        <option value="DCIV" {% if category_filter == 'DCIV' %}selected{% endif %}>DCIV</option>
+        <option value="DEEE" {% if category_filter == 'DEEE' %}selected{% endif %}>DEEE</option>
+        <option value="DMEC" {% if category_filter == 'DMEC' %}selected{% endif %}>DMEC</option>
+        <option value="DCSE" {% if category_filter == 'DCSE' %}selected{% endif %}>DCSE</option>
+        <option value="DCOM" {% if category_filter == 'DCOM' %}selected{% endif %}>DCOM</option>
+        <option value="DH&S" {% if category_filter == 'DH&S' %}selected{% endif %}>DH&S</option>
+        <option value="DECE" {% if category_filter == 'DECE' %}selected{% endif %}>DECE</option>
+        <option value="MCA" {% if category_filter == 'MCA' %}selected{% endif %}>MCA</option>
+        <option value="AID" {% if category_filter == 'AID' %}selected{% endif %}>AID</option>
+        <option value="CAI" {% if category_filter == 'CAI' %}selected{% endif %}>CAI</option>
+        <option value="CSM" {% if category_filter == 'CSM' %}selected{% endif %}>CSM</option>
+        <option value="CSD" {% if category_filter == 'CSD' %}selected{% endif %}>CSD</option>
+        <option value="GEN" {% if category_filter == 'GEN' %}selected{% endif %}>GEN</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="availabilityFilter">Availability</label>
+      <select id="availabilityFilter" name="availabilityFilter" class="form-control" aria-label="Filter by availability">
+        <option value="" {% if availability_filter == '' %}selected{% endif %}>All Books</option>
+        <option value="Available" {% if availability_filter == 'Available' %}selected{% endif %}>Available</option>
+        <option value="Checked Out" {% if availability_filter == 'Checked Out' %}selected{% endif %}>Checked Out</option>
+        <option value="Reserved" {% if availability_filter == 'Reserved' %}selected{% endif %}>Reserved</option>
+      </select>
+    </div>
+
+    <button type="submit" class="btn-primary">
+      Search
+    </button>
+  </form>
+
+  {% if books %}
+  <table class="book-table" role="table" aria-label="Search results">
+    <thead>
+      <tr>
+        <th scope="col">Title</th>
+        <th scope="col">Author</th>
+        <th scope="col">Category</th>
+        <th scope="col">Year</th>
+        <th scope="col">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for book in books %}
+      <tr>
+        <td data-label="Title">{{ book.title }}</td>
+        <td data-label="Author">{{ book.author }}</td>
+        <td data-label="Category">{{ book.category }}</td>
+        <td data-label="Year">{{ book.year }}</td>
+        <td data-label="Status"><span class="status {{ book.status | lower | replace(' ', '-') }}">{{ book.status }}</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="subtitle" style="margin-top: 2rem;">No scrolls found matching your criteria. Try a different incantation.</p>
+  {% endif %}
+</div>
+{% endblock %}
