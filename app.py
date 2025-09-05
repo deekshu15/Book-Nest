@@ -1,20 +1,28 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 import mysql.connector
 from mysql.connector import Error
-import pandas as pd  # For reading CSV
-import os  # For checking if CSV exists
+import pandas as pd
+import os
 
 app = Flask(__name__)
-app.secret_key = 'your_super_secret_key_here'  # !! CHANGE THIS TO A STRONG, RANDOM KEY IN PRODUCTION !!
+app.secret_key = 'your_super_secret_key_here'  # ⚠️ Replace with strong key in production
 
-# 🔹 Database connection helper
+
+# -------------------- DB CONNECTION --------------------
 def get_connection():
     try:
+        host = os.getenv("DB_HOST", "localhost")
+        user = os.getenv("DB_USER", "root")
+        password = os.getenv("DB_PASSWORD", "deekshu15@2006")
+        database = os.getenv("DB_NAME", "library")
+        port = int(os.getenv("DB_PORT", 3306))
+
         conn = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password="deekshu15@2006",  # <<-- UPDATE THIS PASSWORD IF YOUR MYSQL ROOT PASSWORD IS DIFFERENT
-            database="library"
+            host=host,
+            user=user,
+            password=password,
+            database=database,
+            port=port
         )
         if conn.is_connected():
             return conn
@@ -23,65 +31,65 @@ def get_connection():
         return None
 
 
+# -------------------- LOAD CSV INTO DB --------------------
 def load_books_from_csv():
     csv_file = 'Departmentwise BooksData.csv'
     if not os.path.exists(csv_file):
-        print(f"Error: {csv_file} not found. Please place it in the app directory.")
+        print(f"Error: {csv_file} not found.")
         return
 
     try:
         df = pd.read_csv(csv_file)
 
-    
-        df.rename(columns={'Department': 'category', 'Author': 'author', 'Title': 'title', 'Year': 'year'}, inplace=True)
+        df.rename(columns={
+            'Department': 'Department',
+            'Author': 'Author',
+            'Title': 'Title',
+            'Year': 'Year'
+        }, inplace=True)
 
-        df = df.dropna(subset=['title', 'author', 'category', 'year'])
+        df = df.dropna(subset=['Title', 'Author', 'Department', 'Year'])
 
         def safe_int(x):
             try:
                 return int(x)
             except:
                 return None
-        df['year'] = df['year'].apply(safe_int)
-        df = df.dropna(subset=['year'])
+
+        df['Year'] = df['Year'].apply(safe_int)
+        df = df.dropna(subset=['Year'])
 
         conn = get_connection()
         if conn:
             cursor = conn.cursor()
-            # Clear existing books to avoid duplicates on re-run
             cursor.execute("DELETE FROM books")
             conn.commit()
-            print("Existing books cleared from database.")
+            print("Cleared old books.")
 
-            for index, row in df.iterrows():
-                title = row['title']
-                author = row['author']
-                category = row['category']
-                year = int(row['year'])
-                status = 'Available'  # Default status for new books
-
+            for _, row in df.iterrows():
                 cursor.execute(
-                    "INSERT INTO books (title, author, category, year, status) VALUES (%s, %s, %s, %s, %s)",
-                    (title, author, category, year, status)
+                    "INSERT INTO books (Title, Author, Department, Year, Status) VALUES (%s, %s, %s, %s, %s)",
+                    (row['Title'], row['Author'], row['Department'], int(row['Year']), 'Available')
                 )
             conn.commit()
             cursor.close()
             conn.close()
-            print(f"Successfully loaded {len(df)} books from {csv_file}")
+            print(f"Loaded {len(df)} books.")
     except Exception as e:
-        print(f"Error loading books from CSV: {e}")
+        print(f"Error loading CSV: {e}")
 
-# Run CSV data load once when the app starts
+
 with app.app_context():
     load_books_from_csv()
 
-# Home page
+
+# -------------------- ROUTES --------------------
 @app.route('/')
 @app.route('/home')
 def home():
     return render_template('home.html')
 
-# Register page
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -98,32 +106,30 @@ def register():
         if conn:
             try:
                 cursor = conn.cursor()
-                # Check if email already exists
                 cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
                 if cursor.fetchone():
-                    flash("Email already registered. Please use a different email or login.", "danger")
+                    flash("Email already registered.", "danger")
                     return render_template('register.html')
 
                 cursor.execute(
                     "INSERT INTO users (name, email, password, role) VALUES (%s, %s, %s, %s)",
-                    (fullname, email, password, "student")  # Storing plain password as per your context, but hashing is recommended
+                    (fullname, email, password, "student")
                 )
                 conn.commit()
                 flash("Registration successful! Please login.", "success")
                 return redirect(url_for('login'))
             except Error as e:
-                print(f"Error during registration: {e}")
-                flash("Registration failed due to a database error.", "danger")
+                print(f"Error: {e}")
+                flash("Database error during registration.", "danger")
             finally:
-                if conn and conn.is_connected():
-                    cursor.close()
-                    conn.close()
+                cursor.close()
+                conn.close()
         else:
-            flash("Could not connect to the database. Please try again later.", "danger")
+            flash("Could not connect to DB.", "danger")
 
     return render_template('register.html')
 
-# Login page
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -136,36 +142,34 @@ def login():
                 cursor = conn.cursor(dictionary=True)
                 cursor.execute("SELECT * FROM users WHERE email=%s AND password=%s", (email, password))
                 user = cursor.fetchone()
-
                 if user:
                     session['logged_in'] = True
                     session['user_id'] = user['id']
                     session['username'] = user['name']
                     session['role'] = user['role']
                     flash(f"Welcome, {user['name']}!", "success")
-                    return redirect(url_for('search'))  # Redirect to search page after login
+                    return redirect(url_for('search'))
                 else:
                     flash("Invalid email or password.", "danger")
             except Error as e:
-                print(f"Error during login: {e}")
-                flash("Login failed due to a database error.", "danger")
+                print(f"Error: {e}")
+                flash("Database error during login.", "danger")
             finally:
-                if conn and conn.is_connected():
-                    cursor.close()
-                    conn.close()
+                cursor.close()
+                conn.close()
         else:
-            flash("Could not connect to the database. Please try again later.", "danger")
+            flash("Could not connect to DB.", "danger")
 
     return render_template('login.html')
 
-# Logout
+
 @app.route('/logout')
 def logout():
     session.clear()
     flash("You have been logged out.", "info")
     return redirect(url_for('home'))
 
-# Search page
+
 @app.route('/search', methods=['GET', 'POST'])
 def search():
     books = []
@@ -186,42 +190,50 @@ def search():
                 availability_filter = request.form.get('availabilityFilter', '').strip()
 
                 if search_query:
-                    query_parts.append("(LOWER(title) LIKE %s OR LOWER(author) LIKE %s OR LOWER(category) LIKE %s)")
-                    search_query_lower = search_query.lower()
-                    params.extend([f'%{search_query_lower}%', f'%{search_query_lower}%', f'%{search_query_lower}%'])
+                    query_parts.append("(LOWER(Title) LIKE %s OR LOWER(Author) LIKE %s OR LOWER(Department) LIKE %s)")
+                    sq = search_query.lower()
+                    params.extend([f"%{sq}%", f"%{sq}%", f"%{sq}%"])
                 if category_filter and category_filter != "All Categories":
-                    query_parts.append("category = %s")
+                    query_parts.append("Department = %s")
                     params.append(category_filter)
                 if availability_filter:
-                    query_parts.append("status = %s")
+                    query_parts.append("Status = %s")
                     params.append(availability_filter)
 
-            base_query = "SELECT * FROM books"
+            base_query = """
+                SELECT 
+                    Title AS title,
+                    Author AS author,
+                    Department AS department,
+                    Year AS year,
+                    Status AS status
+                FROM books
+            """
             if query_parts:
                 base_query += " WHERE " + " AND ".join(query_parts)
 
             cursor.execute(base_query, tuple(params))
             books = cursor.fetchall()
-
         except Error as e:
-            print(f"Error during search: {e}")
-            flash("Error retrieving books.", "danger")
+            print(f"Error: {e}")
+            flash("Database error during search.", "danger")
         finally:
-            if conn and conn.is_connected():
-                cursor.close()
-                conn.close()
+            cursor.close()
+            conn.close()
     else:
-        flash("Could not connect to the database to search books.", "danger")
+        flash("Could not connect to DB.", "danger")
 
-    return render_template('search.html', books=books, search_query=search_query,
-                           category_filter=category_filter, availability_filter=availability_filter)
+    return render_template('search.html',
+                           books=books,
+                           search_query=search_query,
+                           category_filter=category_filter,
+                           availability_filter=availability_filter)
 
-# Admin page (for viewing all books)
+
 @app.route('/admin_panel')
 def admin_panel():
-    # Basic check for admin role (can be enhanced with decorators)
     if 'logged_in' not in session or session.get('role') != 'admin':
-        flash("Access denied. Admins only.", "danger")
+        flash("Admins only.", "danger")
         return redirect(url_for('login'))
 
     books = []
@@ -229,17 +241,24 @@ def admin_panel():
     if conn:
         try:
             cursor = conn.cursor(dictionary=True)
-            cursor.execute("SELECT * FROM books")
+            cursor.execute("""
+                SELECT 
+                    Title AS title,
+                    Author AS author,
+                    Department AS department,
+                    Year AS year,
+                    Status AS status
+                FROM books
+            """)
             books = cursor.fetchall()
         except Error as e:
-            print(f"Error fetching books for admin: {e}")
-            flash("Error retrieving books for admin panel.", "danger")
+            print(f"Error: {e}")
+            flash("Database error in admin panel.", "danger")
         finally:
-            if conn and conn.is_connected():
-                cursor.close()
-                conn.close()
+            cursor.close()
+            conn.close()
     else:
-        flash("Could not connect to the database for admin panel.", "danger")
+        flash("Could not connect to DB.", "danger")
 
     return render_template('admin.html', books=books)
 
